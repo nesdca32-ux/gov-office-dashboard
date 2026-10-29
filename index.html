@@ -455,8 +455,8 @@ function mk(id,cfg){
   if(charts[id])charts[id].destroy();
   Chart.defaults.color=css('--muted');Chart.defaults.borderColor=css('--border');
   Chart.defaults.font.family=FONT;Chart.defaults.font.size=12.5;
-  Chart.defaults.animation=reduce?false:{duration:350};
   cfg.options=cfg.options||{};cfg.options.responsive=true;cfg.options.maintainAspectRatio=false;
+  cfg.options.animation=reduce?false:{duration:350};
   charts[id]=new Chart($(id),cfg);return charts[id];
 }
 const centerText={id:'centerText',afterDraw(c,a,o){if(!o||!o.text)return;const{ctx,chartArea:{left,right,top,bottom}}=c;const x=(left+right)/2,y=(top+bottom)/2;
@@ -541,14 +541,14 @@ function rOverview(){
   mk('cPareto',{data:{labels:list.map(m=>trunc(short(m.m),16)),datasets:[
     {type:'bar',label:'สำนักงาน/หน่วย',data:list.map(m=>m.tot),backgroundColor:list.map((m,i)=>dark[i]?ac:ac+'66'),borderRadius:4,yAxisID:'y',order:2},
     {type:'line',label:'% สะสม',data:cumP,borderColor:am,backgroundColor:am,pointRadius:3,tension:.15,yAxisID:'y2',order:1}]},
-   options:{onClick:(e,els)=>{if(els.length){const m=list[els[0].index].m;F.ministry.clear();F.ministry.add(m);update()}},
+   options:{onClick:(e,els)=>{if(els.length){const m=list[els[0].index].m;setTimeout(()=>{F.ministry.clear();F.ministry.add(m);update()},0)}},
     plugins:{legend:{display:true,position:'bottom'},tooltip:{...tip,callbacks:{title:i=>short(list[i[0].dataIndex].m),label:c=>c.dataset.type==='line'?` % สะสม: ${c.parsed.y.toFixed(1)}%`:` ${fmt(c.parsed.y)} แห่ง (${pf(pct(c.parsed.y,total),1)})`}}},
     scales:{x:{ticks:{maxRotation:65,minRotation:45,autoSkip:false,font:{size:11.5}},grid:{display:false}},y:{beginAtZero:true,ticks:{callback:v=>fmt(v)},title:{display:true,text:'แห่ง'}},y2:{position:'right',min:0,max:100,grid:{display:false},ticks:{callback:v=>v+'%'}}}}});
 
   // level donut
   const idx=lvT.map((v,i)=>i).filter(i=>lvT[i]>0);
   mk('cLevel',{type:'doughnut',plugins:[centerText],data:{labels:idx.map(i=>LV_SHORT[i]),datasets:[{data:idx.map(i=>lvT[i]),backgroundColor:idx.map(lvCol),borderColor:css('--surface'),borderWidth:2}]},
-   options:{cutout:'62%',onClick:(e,els)=>{if(els.length){const L=LEVELS[idx[els[0].index]];F.level.clear();F.level.add(L);update()}},
+   options:{cutout:'62%',onClick:(e,els)=>{if(els.length){const L=LEVELS[idx[els[0].index]];setTimeout(()=>{F.level.clear();F.level.add(L);update()},0)}},
     plugins:{centerText:{text:fmt(total),sub:'แห่ง'},legend:{position:'right',labels:{boxWidth:12,padding:10}},tooltip:{...tip,callbacks:{label:c=>` ${fmt(c.parsed)} แห่ง (${pf(pct(c.parsed,total),1)})`}}}}});
 
   // admin x level
@@ -838,6 +838,7 @@ const minTot=groupSum(REC,r=>r.ministry);
 ddGroup('fMin',[...D.ministry].sort((a,b)=>minTot.get(b)-minTot.get(a)).map(m=>[m,short(m)]),F.ministry,'กระทรวง');
 ddGroup('fMis',[...D.mission].sort((a,b)=>a.localeCompare(b,'th')).map(m=>[m,m]),F.mission,'กลุ่มภารกิจ');
 update();
+try{if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(document.fonts.check('16px Sarabun'))Object.values(charts).forEach(c=>{try{c.update('none')}catch(e){}})})}catch(e){}
 })();
 </script>
 </body>
